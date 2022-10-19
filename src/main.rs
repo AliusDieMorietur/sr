@@ -5,34 +5,39 @@ const RADIX: u32 = 10;
 
 #[derive(PartialEq, Copy, Clone, Debug)]
 enum TokenType {
-    Number, Plus, Eof
+    Number, 
+    Plus,
+    Minus, 
+    Eof,
 }
 
-#[derive(Clone, Debug)]
-enum Value {
-    Number(f64),
-    String(String)
-}
+// #[derive(Clone, Debug)]
+// enum Value {
+//     Number(f64),
+//     String(String)
+// }
 
-impl Value {
-    fn number(self) -> f64 {
-        if let Value::Number(n) = self { n } else { panic!("Not a number") }
-    }
+// impl Value {
+//     fn number(self) -> f64 {
+//         if let Value::Number(n) = self { n } else { panic!("Not a number") }
+//     }
 
-    fn string(self) -> String {
-        if let Value::String(s) = self { s } else { panic!("Not a string") }
-    }
-}
+//     fn string(self) -> String {
+//         if let Value::String(s) = self { s } else { panic!("Not a string") }
+//     }
+// }
 
 
 #[derive(Clone, Debug)]
 struct Token {
     pub token_type: TokenType,
-    pub value: Option<Value>
+    // pub value: Option<Value>
+    pub value: Option<String>
 }
 
 impl Token {
-    fn new(token_type: TokenType, value: Option<Value>) -> Token {
+    // fn new(token_type: TokenType, value: Option<Value>) -> Token {
+    fn new(token_type: TokenType, value: Option<String>) -> Token {
         Token {
             token_type,
             value
@@ -61,45 +66,40 @@ impl Interpreter {
             return Token::new(TokenType::Eof, None)
         }
 
-        let current_char = self.text.chars().nth(self.pos).unwrap();
+        let chars = self.text.chars();
+        let current_char = chars.nth(self.pos).unwrap();
 
-        if current_char.is_digit(RADIX) {
-            let token = Token::new(
+        println!("current_char: {}", current_char);
+
+        if current_char.is_digit(RADIX)  {
+            self.pos += 1;
+            return Token::new(
                 TokenType::Number,
-                Some(
-                    Value::Number(
-                        current_char
-                            .to_digit(RADIX)
-                            .unwrap()
-                            as f64
-                        )
-                    )
-                );
-            self.pos += 1;
-            return token;
-        }
+                Some(current_char.to_string())
+            );
+        };
 
-        if current_char == '+' {
-            let token = Token::new(
-                TokenType::Plus,
-                Some(
-                    Value::String(
-                        current_char
-                            .to_string()
-                        )
-                    )
+        match current_char {
+            '+' => {
+                self.pos += 1;
+                return Token::new(
+                    TokenType::Plus,
+                    Some(current_char.to_string())
                 );
-            self.pos += 1;
-            return token
+            },
+            '-' => {
+                self.pos += 1;
+                return Token::new(
+                    TokenType::Minus,
+                    Some(current_char.to_string())
+                )
+            },
+            _ => panic!("Can't get next token")
         }
-
-       panic!("Can't get next token")
     }
     
     fn eat(&mut self, token_type: TokenType)  {
         let current_token = self.current_token.clone().unwrap();
-        // println!("current_token: {:?}", current_token);
-        // println!("token_tpye: {:?}", token_type);
         if current_token.token_type == token_type {
             self.current_token = Some(self.get_next_token());
         } else {
@@ -107,33 +107,29 @@ impl Interpreter {
         }
     }
 
-    fn expr(&mut self) -> f64 {
+    fn expr(&mut self) -> () {
         self.current_token = Some(self.get_next_token());
 
         let left = self.current_token.clone();
         self.eat(TokenType::Number);
 
-        // println!("after eat: {:?}", self.current_token);
+        println!("after eat: {:?}", self.current_token);
 
         let op = self.current_token.clone();
         self.eat(TokenType::Plus);
 
-        // println!("after eat: {:?}", self.current_token);
+        println!("after eat: {:?}", self.current_token);
 
         let right = self.current_token.clone();
         self.eat(TokenType::Number);
 
-        // println!("after eat: {:?}", self.current_token);
+        println!("after eat: {:?}", self.current_token);
 
-        println!("op: {:?}", op);
-        println!("left: {:?}", left);
-        println!("right: {:?}", right);
-
-        let left_value = left.unwrap().value.unwrap().number(); 
+        // let left_value = left.unwrap().value.unwrap().number(); 
         
-        let right_value = right.unwrap().value.unwrap().number();
+        // let right_value = right.unwrap().value.unwrap().number();
 
-        left_value + right_value
+        // left_value + right_value
     }
 }
 
@@ -152,6 +148,6 @@ fn main() {
         println!("s: |{}|", s);
         let mut interpreter = Interpreter::new(s);
         let result = interpreter.expr();
-        println!("{}", result);
+        // println!("{}", result);
     }
 }
