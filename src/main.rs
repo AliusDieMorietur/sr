@@ -97,6 +97,10 @@ impl Interpreter {
         };
 
         match current_char {
+            ' ' => {
+                self.pos += 1;
+                return self.get_next_token();
+            },
             '+' => {
                 self.pos += 1;
                 return Token::new(
@@ -155,7 +159,7 @@ impl Interpreter {
 
 fn main() {
     loop {
-        let mut  s= String::new();
+        let mut  s = String::new();
         print!("calc> ");
         let _ = stdout().flush();
         stdin().read_line(&mut s).expect("Did not enter a correct string");
