@@ -1,20 +1,19 @@
-
 use core::panic;
-use std::io::{stdin,stdout,Write};
+use std::io::{stdin, stdout, Write};
 
 const RADIX: u32 = 10;
 
 #[derive(PartialEq, Copy, Clone, Debug)]
 enum Operation {
     Plus,
-    Minus, 
+    Minus,
 }
 
 #[derive(PartialEq, Copy, Clone, Debug)]
 enum TokenType {
-    Number, 
+    Number,
     Plus,
-    Minus, 
+    Minus,
     Eof,
 }
 
@@ -34,26 +33,22 @@ enum TokenType {
 //     }
 // }
 
-
 #[derive(Clone, Debug)]
 struct Token {
     pub token_type: TokenType,
     // pub value: Option<Value>
-    pub value: Option<String>
+    pub value: Option<String>,
 }
 
 impl Token {
     // fn new(token_type: TokenType, value: Option<Value>) -> Token {
     fn new(token_type: TokenType, value: Option<String>) -> Token {
-        Token {
-            token_type,
-            value
-        }
+        Token { token_type, value }
     }
 
     fn value_to_number(&self) -> f64 {
         self.value.clone().unwrap().as_str().parse::<f64>().unwrap()
-    } 
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -70,10 +65,9 @@ impl Interpreter {
             text: text.clone(),
             pos: 0,
             current_token: None,
-            current_char: text.clone().chars().nth(0)
+            current_char: text.clone().chars().nth(0),
         }
     }
-
 
     fn advance(&mut self) {
         self.pos += 1;
@@ -95,7 +89,7 @@ impl Interpreter {
         }
         return s;
     }
-        
+
     fn get_next_token(&mut self) -> Token {
         while let Some(current_char) = self.current_char {
             if current_char.is_digit(RADIX) {
@@ -105,28 +99,21 @@ impl Interpreter {
                 ' ' => {
                     self.skip_whitespace();
                     continue;
-                },
+                }
                 '+' => {
                     self.advance();
-                    return Token::new(
-                        TokenType::Plus,
-                        Some(current_char.to_string())
-                    );
-                },
+                    return Token::new(TokenType::Plus, Some(current_char.to_string()));
+                }
                 '-' => {
                     self.advance();
-                    return Token::new(
-                        TokenType::Minus,
-                        Some(current_char.to_string())
-                    )
-                },
-                _ => panic!("Can't get next token")
-            }       
+                    return Token::new(TokenType::Minus, Some(current_char.to_string()));
+                }
+                _ => panic!("Can't get next token"),
+            }
         }
         return Token::new(TokenType::Eof, None);
-
     }
-    
+
     fn skip_whitespace(&mut self) {
         if let Some(current_char) = self.current_char {
             if current_char == ' ' {
@@ -135,7 +122,7 @@ impl Interpreter {
         }
     }
 
-    fn eat(&mut self, token_type: TokenType)  {
+    fn eat(&mut self, token_type: TokenType) {
         if let Some(current_token) = self.current_token.clone() {
             if current_token.token_type == token_type {
                 self.current_token = Some(self.get_next_token());
@@ -144,7 +131,6 @@ impl Interpreter {
             }
         }
     }
-    
 
     fn expr(&mut self) -> f64 {
         self.current_token = Some(self.get_next_token());
@@ -163,10 +149,10 @@ impl Interpreter {
                 match current_operation {
                     Some(Operation::Minus) => {
                         result -= current_number;
-                    },
+                    }
                     Some(Operation::Plus) => {
                         result += current_number;
-                    },
+                    }
                     None => {
                         panic!("Unallowed operator")
                     }
@@ -177,27 +163,28 @@ impl Interpreter {
                 TokenType::Minus => {
                     current_operation = Some(Operation::Minus);
                     self.eat(TokenType::Minus);
-                },
+                }
                 TokenType::Plus => {
                     current_operation = Some(Operation::Plus);
                     self.eat(TokenType::Plus);
-                },
+                }
                 _ => {
                     panic!("Unexpected operator")
                 }
             }
         }
         result
-       
     }
 }
 
 fn main() {
     loop {
-        let mut  s = String::new();
+        let mut s = String::new();
         print!("calc> ");
         let _ = stdout().flush();
-        stdin().read_line(&mut s).expect("Did not enter a correct string");
+        stdin()
+            .read_line(&mut s)
+            .expect("Did not enter a correct string");
         if let Some('\n') = s.chars().next_back() {
             s.pop();
         }
